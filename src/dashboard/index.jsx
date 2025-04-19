@@ -4,11 +4,18 @@ import AddResume from "./components/AddResume";
 import { useUser } from "@clerk/clerk-react";
 import GlobalApi from "@/service/GlobalApi";
 import ResumeCardItem from "./components/ResumeCardItem";
+import UploadCVBox from "./components/UploadCVBox";
+import { useRouter } from "next/navigation";
 
 function Dashboard() {
   const { user } = useUser();
   const [resumeList, setResumeList] = useState([]);
   const [error, setError] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState("");
+  const [extracting, setExtracting] = useState(false);
+  const [extractedInfo, setExtractedInfo] = useState(null);
+  const router = useRouter();
   useEffect(() => {
     console.log("Clerk user:", user);
     if (user) {
@@ -33,6 +40,58 @@ function Dashboard() {
         setResumeList([]);
       });
   };
+  const handleCVUpload = async (file) => {
+    setUploading(true);
+    setUploadedImageUrl("");
+    setError("");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/convert-pdf-to-image", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok && data.imageBase64) {
+        setUploadedImageUrl(data.imageBase64);
+      } else {
+        setError(data.error || "Failed to convert PDF.");
+      }
+    } catch (err) {
+      setError("Failed to upload and convert PDF.");
+    } finally {
+      setUploading(false);
+    }
+  };
+  const handleExtractInfo = async () => {
+    setExtracting(true);
+    setError("");
+    setExtractedInfo(null);
+    try {
+      const res = await fetch("/api/extract-cv-info", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64: uploadedImageUrl }),
+      });
+      const data = await res.json();
+      if (res.ok && data.extracted) {
+        setExtractedInfo(data.extracted);
+        console.log("Extracted info:", data.extracted);
+      } else {
+        setError(data.error || "Failed to extract information.");
+      }
+    } catch (err) {
+      setError("Failed to extract information.");
+    } finally {
+      setExtracting(false);
+    }
+  };
+  const handleStartEditing = () => {
+    if (extractedInfo) {
+      localStorage.setItem("extractedResumeInfo", JSON.stringify(extractedInfo));
+      router.push("/dashboard/resume/new/edit");
+    }
+  };
   if (!user) {
     return (
       <div className="p-10 md:px-20 lg:px-32">
@@ -55,6 +114,34 @@ function Dashboard() {
       "
       >
         <AddResume key={0} />
+        <div>
+          <UploadCVBox onUpload={handleCVUpload} />
+          {uploading && <div className="text-blue-500 mt-2">Converting PDF...</div>}
+          {uploadedImageUrl && (
+            <div className="mt-2">
+              <img src={uploadedImageUrl} alt="Converted CV" className="rounded shadow max-h-40 mx-auto" />
+              <div className="text-xs text-center text-gray-500 mt-1">Preview of extracted image</div>
+              <button
+                className="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                onClick={handleExtractInfo}
+                disabled={extracting}
+              >
+                {extracting ? "Extracting..." : "Extract Info"}
+              </button>
+              {extractedInfo && (
+                <>
+                  <pre className="mt-2 text-xs bg-gray-100 p-2 rounded max-h-40 overflow-auto text-left">{JSON.stringify(extractedInfo, null, 2)}</pre>
+                  <button
+                    className="mt-3 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                    onClick={handleStartEditing}
+                  >
+                    Start Editing
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
         {resumeList && resumeList.length > 0
           ? resumeList.map((resume) => (
               <ResumeCardItem

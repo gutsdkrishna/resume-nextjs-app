@@ -23,6 +23,7 @@
     "lucide-react": "^0.493.0",
     "mongoose": "^8.13.2",
     "next": "15.3.1",
+    "openai": "^4.95.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-simple-wysiwyg": "^3.2.2",
