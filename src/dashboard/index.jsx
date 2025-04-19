@@ -22,12 +22,23 @@ function Dashboard() {
       GetResumesList();
     }
   }, [user]);
+
+  // Keep localStorage in sync with resumeList
+  useEffect(() => {
+    if (Array.isArray(resumeList) && resumeList.length > 0) {
+      localStorage.setItem("userResumes", JSON.stringify(resumeList));
+    } else {
+      localStorage.removeItem("userResumes");
+    }
+  }, [resumeList]);
+
   const GetResumesList = () => {
     GlobalApi.GetUserResumes()
       .then((resp) => {
         console.log("API resumes response:", resp.data);
         if (Array.isArray(resp.data)) {
           setResumeList(resp.data);
+          localStorage.setItem("userResumes", JSON.stringify(resp.data));
           setError("");
         } else if (resp.data && resp.data.error) {
           setError("Could not load resumes: " + resp.data.error);
@@ -38,6 +49,7 @@ function Dashboard() {
       .catch((err) => {
         setError("Could not load resumes. Please try again later.");
         setResumeList([]);
+        localStorage.removeItem("userResumes");
       });
   };
   const handleCVUpload = async (file) => {

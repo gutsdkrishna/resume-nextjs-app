@@ -36,13 +36,26 @@ function EditResume() {
         return;
       }
     }
-    GetResumeInfo();
-  }, []);
-  const GetResumeInfo = () => {
+    // Try to load from localStorage first
+    const resumesStr = localStorage.getItem("userResumes");
+    let found = null;
+    if (resumesStr) {
+      try {
+        const resumes = JSON.parse(resumesStr);
+        found = resumes.find(r => r._id === resumeId || r.resumeId === resumeId || r.id === resumeId);
+        if (found) {
+          setResumeInfo(found);
+        }
+      } catch {}
+    }
+    // Fetch from API, but merge with found/localStorage data
     GlobalApi.GetResumeById(resumeId).then((res) => {
-      setResumeInfo(res.data.data);
+      const apiData = res.data.data;
+      // Merge: API data takes precedence, fallback to found/localStorage for missing fields
+      const merged = { ...found, ...apiData };
+      setResumeInfo(merged);
     });
-  };
+  }, [resumeId]);
   return (
     <ResumeInfoContext.Provider value={{ resumeInfo, setResumeInfo }}>
       <div className="grid grid-cols-1 md:grid-cols-2 p-10 gap-10">
