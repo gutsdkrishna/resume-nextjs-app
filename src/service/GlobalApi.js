@@ -21,6 +21,15 @@ const CreateResumeWithDummyData = async (data) => {
     throw error;
   }
 };
+const CreateResume = async (data) => {
+  try {
+    const response = await axiosClient.post("/user-resumes", data);
+    return response.data;
+  } catch (error) {
+    console.error('CreateResume error:', error);
+    throw error;
+  }
+};
 export default {
   CreateNewResume,
   GetUserResumes,
@@ -28,4 +37,5 @@ export default {
   GetResumeById,
   DeleteResumeById,
   CreateResumeWithDummyData,
+  CreateResume,
 };

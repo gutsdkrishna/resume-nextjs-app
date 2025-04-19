@@ -6,6 +6,7 @@ import GlobalApi from "@/service/GlobalApi";
 import ResumeCardItem from "./components/ResumeCardItem";
 import UploadCVBox from "./components/UploadCVBox";
 import { useRouter } from "next/navigation";
+import { v4 as uuidv4 } from "uuid";
 
 function Dashboard() {
   const { user } = useUser();
@@ -98,6 +99,67 @@ function Dashboard() {
       setExtracting(false);
     }
   };
+  const handleCreateExtractedResume = async () => {
+    if (!extractedInfo) return;
+    const gemma = extractedInfo;
+    const resumeId = uuidv4();
+    const now = new Date().toISOString();
+    const jobTitle = gemma.experience && gemma.experience[0]?.jobTitle ? gemma.experience[0].jobTitle : "";
+    const transformed = {
+      resumeId,
+      title: gemma.personal?.name
+        ? `${gemma.personal.name}'s Resume`
+        : `Imported Resume ${Math.floor(Math.random() * 10000)}`,
+      userId: user?.id || "",
+      userEmail: user?.primaryEmailAddress?.emailAddress || "",
+      userName: user?.fullName || gemma.personal?.name || "",
+      createdAt: now,
+      updatedAt: now,
+      __v: 0,
+      firstName: gemma.personal?.name?.split(" ")[0] || "",
+      lastName: gemma.personal?.name?.split(" ").slice(1).join(" ") || "",
+      email: gemma.personal?.email || "",
+      phone: gemma.personal?.phone || "",
+      address: gemma.personal?.address || "",
+      jobTitle: jobTitle,
+      summery: gemma.summary || "",
+      experience: Array.isArray(gemma.experience)
+        ? gemma.experience.map(exp => ({
+            title: exp.jobTitle || "",
+            companyName: exp.company || "",
+            city: "",
+            state: "",
+            startDate: exp.startDate || "",
+            endDate: exp.endDate || "",
+            workSummery: exp.description || ""
+          }))
+        : [],
+      education: Array.isArray(gemma.education)
+        ? gemma.education.map(edu => ({
+            universityName: edu.institution || "",
+            degree: edu.degree || "",
+            major: "",
+            startDate: edu.startDate || "",
+            endDate: edu.endDate || "",
+            description: ""
+          }))
+        : [],
+      skills: Array.isArray(gemma.skills)
+        ? gemma.skills.map(skill => ({ name: skill, rating: 0 }))
+        : [],
+    };
+    try {
+      const dbRes = await GlobalApi.CreateResume(transformed);
+      const dbResume = dbRes?.data?.data || dbRes?.data || dbRes;
+      if (dbResume) {
+        localStorage.setItem("extractedResumeInfo", JSON.stringify(dbResume));
+        GetResumesList(); // Refresh dashboard
+      }
+    } catch (err) {
+      setError("Failed to create resume in DB.");
+      console.error("CreateResume error:", err, transformed);
+    }
+  };
   const handleStartEditing = () => {
     if (extractedInfo) {
       localStorage.setItem("extractedResumeInfo", JSON.stringify(extractedInfo));
@@ -145,9 +207,9 @@ function Dashboard() {
                   <pre className="mt-2 text-xs bg-gray-100 p-2 rounded max-h-40 overflow-auto text-left">{JSON.stringify(extractedInfo, null, 2)}</pre>
                   <button
                     className="mt-3 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                    onClick={handleStartEditing}
+                    onClick={handleCreateExtractedResume}
                   >
-                    Start Editing
+                    Create Resume
                   </button>
                 </>
               )}
