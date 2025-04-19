@@ -80,7 +80,6 @@ function PersonalDetail({ enabledNext }) {
             <Input
               name="firstName"
               value={formData.firstName}
-              required
               onChange={handleInputChange}
             />
           </div>
@@ -88,7 +87,6 @@ function PersonalDetail({ enabledNext }) {
             <label className="text-sm">Last Name</label>
             <Input
               name="lastName"
-              required
               value={formData.lastName}
               onChange={handleInputChange}
             />
@@ -97,7 +95,6 @@ function PersonalDetail({ enabledNext }) {
             <label className="text-sm">Job Title</label>
             <Input
               name="jobTitle"
-              required
               value={formData.jobTitle}
               onChange={handleInputChange}
             />
@@ -106,7 +103,6 @@ function PersonalDetail({ enabledNext }) {
             <label className="text-sm">Address</label>
             <Input
               name="address"
-              required
               value={formData.address}
               onChange={handleInputChange}
             />
@@ -115,7 +111,6 @@ function PersonalDetail({ enabledNext }) {
             <label className="text-sm">Phone</label>
             <Input
               name="phone"
-              required
               value={formData.phone}
               onChange={handleInputChange}
             />
@@ -124,7 +119,6 @@ function PersonalDetail({ enabledNext }) {
             <label className="text-sm">Email</label>
             <Input
               name="email"
-              required
               value={formData.email}
               onChange={handleInputChange}
             />

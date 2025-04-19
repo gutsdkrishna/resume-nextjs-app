@@ -76,7 +76,6 @@ function Summery({ enabledNext }) {
           </div>
           <Textarea
             className="mt-5"
-            required
             value={summery}
             defaultValue={summery ? summery : resumeInfo?.summery}
             onChange={(e) => setSummery(e.target.value)}
