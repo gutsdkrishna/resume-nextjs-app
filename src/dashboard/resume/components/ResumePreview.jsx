@@ -5,7 +5,6 @@ import SummaryPreview from "./preview/SummaryPreview";
 import ExperiencePreview from "./preview/ExperiencePreview";
 import EducationalPreview from "./preview/EducationalPreview";
 import SkillsPreview from "./preview/SkillsPreview";
-import dummy from "../../../data/dummy";
 
 function ResumePreview() {
   const { resumeInfo } = useContext(ResumeInfoContext);

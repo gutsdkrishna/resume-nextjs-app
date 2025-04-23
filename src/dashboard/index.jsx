@@ -7,6 +7,8 @@ import ResumeCardItem from "./components/ResumeCardItem";
 import UploadCVBox from "./components/UploadCVBox";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
+import { UserButton } from "@clerk/clerk-react";
+
 
 function Dashboard() {
   const { user } = useUser();
@@ -175,7 +177,13 @@ function Dashboard() {
     );
   }
   return (
-    <div className="p-10 md:px-20 lg:px-32">
+    <div className="p-10 md:px-20 lg:px-32 relative">
+      {/* UserButton at top right */}
+      <div className="absolute top-6 right-10 z-10" style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ transform: 'scale(1.4)' }}>
+          <UserButton />
+        </div>
+      </div>
       <h2 className="font-bold text-3xl">My Resume</h2>
       <p>Start Creating AI resume to your next Job role</p>
       {error && (
